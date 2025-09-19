@@ -1,0 +1,69 @@
+-- Question-1(Find customers who reviewed all the products they purchased.)
+-- select 
+-- c.cust_id as CustomerId,
+-- c.cust_name as CustomerName
+-- from customers as c
+-- 	join orders as o
+-- on c.cust_id = o.cust_id
+-- 	join orderitems as oi
+-- on o.order_id = oi.order_id
+-- 	join reviews as r
+-- on oi.prod_id = r.prod_id
+-- group by
+-- c.cust_id,
+-- c.cust_name
+-- having count(distinct oi.prod_id) = count(distinct r.prod_id) 
+
+-- Question-2(Show the top 3 best-selling products by revenue per category.)
+-- select 
+-- ProductId,
+-- ProductName,
+-- Category,
+-- total_revenue
+-- from
+-- (select p.prod_id as ProductId,
+-- p.prod_name as ProductName,
+-- p.category as Category,
+-- sum(oi.quantity * p.price) as total_revenue,
+-- dense_rank() over (partition by p.category order by sum(oi.quantity * p.price)  desc) as rnk
+-- from products as p
+-- 	join orderitems as oi
+-- on p.prod_id = oi.prod_id
+-- group by 
+-- p.prod_id,
+-- p.prod_name,
+-- p.category
+-- ) as t
+-- where rnk <= 3; 
+
+-- Question-3( List products that were reviewed by customers who never bought them.)
+-- select 
+-- p.prod_id as ProductId,
+-- p.prod_name as ProductName
+-- from products as p
+-- 	join reviews as r
+-- on p.prod_id = r.prod_id
+-- where not exists (
+-- 	select 1
+-- 		from orders as o
+-- 			join orderitems as oi
+-- 		on oi.order_id = o.order_id
+--         where o.cust_id = r.cust_id
+--         and oi.prod_id = r.prod_id
+-- );
+
+-- Question-4( Find the customer who placed the largest order in terms of total items.)
+-- select customerId,customerName,max_quantity from
+-- (select 
+-- c.cust_id as CustomerId,
+-- c.cust_name as CustomerName,
+-- o.order_id,
+-- sum(oi.quantity) as max_quantity,
+-- dense_rank() over (order by sum(oi.quantity) desc) as rnk
+-- from customers as c
+-- 	join orders o
+-- on c.cust_id = o.cust_id
+-- 	join orderitems as oi
+-- on o.order_id = oi.order_id
+-- group by c.cust_id,c.cust_name,o.order_id) as t
+-- where rnk = 1; 
